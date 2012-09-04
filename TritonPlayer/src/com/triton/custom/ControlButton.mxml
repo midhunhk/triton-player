@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%" 
+	xmlns:custom="com.triton.custom.*"
+	toolTip="{imageTitle}"
+	useHandCursor="true" buttonMode="true" mouseChildren="false"
+	creationComplete="init()" remove="onRemove()">
+	
+	<mx:Metadata>
+		[Exclude(name="gradientCanvas", kind="property")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			//-----------------------------------------------------------------
+			//
+			//	Bindable Variables
+			//
+			//-----------------------------------------------------------------
+			
+			private var _imagePath:String;
+			private var _imageTitle:String;
+			private var _showBorders:Boolean = true;
+			
+			public function set imagePath(value:String):void{
+				this._imagePath = value;
+			}
+			
+			[Bindable]
+			public function get imagePath():String{
+				return this._imagePath;
+			}
+			
+			public function set imageTitle(value:String):void{
+				this._imageTitle = value;
+			}
+			
+			[Bindable]
+			public function get imageTitle():String{
+				return this._imageTitle;
+			}
+			
+			public function set showBorders(value:Boolean):void{
+				this._showBorders = value;
+			}
+			
+			[Bindable]
+			public function get showBorders():Boolean{
+				return this._showBorders;
+			}
+			
+			/**
+			 * Init method
+			 */
+			private function init():void
+			{
+				this.addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+				this.addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+			}
+			
+			private function onRemove():void
+			{
+				// Its polite to remove listeners after use
+				this.removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+				this.removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+			}
+			
+			private function onMouseOver(event:MouseEvent):void
+			{
+				gradientCanvas.styleName = "controlsBackgroundHighlight";
+			}
+			
+			private function onMouseOut(event:MouseEvent):void
+			{
+				gradientCanvas.styleName = "controlsBackgroundNormal";
+			}
+		]]>
+	</mx:Script>
+	
+	<custom:GradientCanvas id="gradientCanvas" width="100%" height="100%" 
+		styleName="controlsBackgroundNormal">
+		<mx:HBox width="100%" height="100%" verticalGap="0" horizontalGap="0" 
+			horizontalAlign="center" verticalAlign="middle"
+			verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			
+			<mx:Canvas width="94%" height="100%" verticalCenter="0" horizontalCenter="0">
+				<mx:Image source="{imagePath}" verticalCenter="0" horizontalCenter="0"/>
+			</mx:Canvas>
+			
+			<mx:Canvas width="0.25%" height="100%" styleName="dividerRightColor"
+				visible="{showBorders}"/>
+		</mx:HBox>
+	</custom:GradientCanvas>
+</mx:Canvas>

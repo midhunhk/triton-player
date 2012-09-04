@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute" showFlexChrome="false"
+	width="100%" height="100%"
+	verticalScrollPolicy="off"
+	horizontalScrollPolicy="off"
+	preinitialize="loadSettings()"
+	applicationComplete="applicationCompleteHandler()"
+	creationComplete="creationCompleteHandler()"
+	closing="saveApplicationSettings(event)"
+	invoke="onInvokeEvent(event)"
+	xmlns:custom="com.triton.custom.*" 
+	xmlns:views="com.triton.views.*">
+	
+	<!-- Declare the Resources -->
+	<mx:Metadata>
+		[ResourceBundle("resources")]
+	</mx:Metadata>
+	
+	<!-- include scripts -->
+	<mx:Script source="TritonPlayerAS.as"/>
+	
+	<mx:Style source="/resources/css/Font.css"/>
+	
+	<!-- effects -->
+	<mx:Blur id="blurInEffect" duration="500"
+		blurXFrom="0" blurXTo="6" 
+		blurYFrom="0" blurYTo="6"/>
+	<mx:Blur id="blurOutEffect" duration="100"
+		blurXFrom="3" blurXTo="0" 
+		blurYFrom="3" blurYTo="0"/>
+	
+	<!--states-->
+	<mx:states>
+		<mx:State name="compactState">
+			<mx:SetProperty target="{upperContainer}" name="percentHeight" 
+				value="100"/>
+			<mx:SetProperty target="{outerCanvas}" name="height" 
+				value="{upperContainer.height + 2}"/>
+			<mx:RemoveChild target="{lowerContainer}"/>
+		</mx:State>
+	</mx:states>
+	
+	<!--transition-->
+	<mx:transitions>
+		<mx:Transition fromState="*" toState="*">
+			<mx:Fade duration="150" target="{lowerContainer}"/>
+		</mx:Transition>
+	</mx:transitions>
+	
+	<!-- layout -->
+	<mx:Canvas id="outerWrapper" visible="true" creationComplete="onWrapperCreated()"
+		verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<custom:GradientCanvas id="outerCanvas" styleName="outerCanvasGradient" 
+			width="100%" height="100%">
+			
+			<mx:VBox width="95%" height="100%" 
+				verticalGap="0" horizontalGap="0"
+				verticalScrollPolicy="off" horizontalScrollPolicy="off" 
+				horizontalAlign="center" verticalAlign="middle"
+				verticalCenter="0" horizontalCenter="0">
+				
+				<mx:VBox id="upperContainer" width="100%" height="40%"
+					verticalGap="0" horizontalGap="0"
+					verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					
+					<views:TopPanel id="topPanelInstance" width="100%" height="8%" alpha="8"/>			
+					
+					<mx:Spacer id="playerInfoSpacer" width="100%" height="2%"/>
+					
+					<custom:GradientCanvas id="playerInfoAndControls" styleName="innerCanvasGradient" 
+						visible="true" width="100%" height="86%" alpha="3">
+						<mx:VBox width="100%" height="100%" verticalGap="0" horizontalGap="0" 
+							verticalScrollPolicy="off" horizontalScrollPolicy="off">
+							<views:InfoView width="100%" height="83%" 
+								verticalScrollPolicy="off" horizontalScrollPolicy="off"/>
+							<views:PlayerControls width="100%" height="17%"/>
+						</mx:VBox>
+					</custom:GradientCanvas>
+						
+					<mx:Spacer height="4%" width="100%"/>
+				</mx:VBox>
+				
+				<mx:VBox id="lowerContainer" width="100%" height="60%"
+					verticalGap="0" horizontalGap="0"
+					verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					
+					<custom:GradientCanvas id="playlistContainer" styleName="innerCanvasGradient"
+						width="100%" height="98%" alpha="3"
+						verticalScrollPolicy="off" horizontalScrollPolicy="off">
+						<views:PlaylistView id="playlistView" width="100%" height="100%"/>
+					</custom:GradientCanvas>
+					
+					<mx:Spacer width="100%" height="2%"/>
+				</mx:VBox>
+			</mx:VBox>
+			
+		</custom:GradientCanvas>
+		
+		<!--This layer will come infront of the page when a modal window is shown-->
+		<custom:GradientCanvas id="modelLayoutWindow" width="100%"
+			visible="{model.isModalWindowVisible}" height="{outerCanvas.height}"
+			show="{blurInEffect.play([outerWrapper])}" 
+			hide="{blurOutEffect.play([outerWrapper])}"
+			styleName="modalWindowCanvas" alpha="0.4"/>
+	</mx:Canvas>
+	
+</mx:WindowedApplication>

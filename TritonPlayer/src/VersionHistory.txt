@@ -1,0 +1,94 @@
+Triton Player 1.0 [Dec 2010]
+ - Initial Release Version
+ 
+Triton Player 1.0.4.x [Jan 2011]
+ - [FIXED] 		Not saving of settings and default play list on closing the app by ALT+F4.
+ - [ADDED] 		Added option to control Minimize to Tray.
+ - [CHANGED] 	Width of scrolling text in InfoViewPanel increased.
+ - [ADDED] 		Clicking on SystemTray icon when minimized will restore the player.
+ - [CHANGED] 	Default playlist has tpl extension instead of xml.
+ - [ADDED]		Visualization can be disabled.
+ - [OPTIMIZED]	Code Optimization for components.
+ - [CHANGED]	SysTray icon displays artist name - track name instead of Triton Player - Track name.
+ - [FIXED]		Bug with overlapping playing of Tracks.
+ 
+Triton Player 1.1 [Feb 2011]
+ - [ADDED]		More localization strings in File / Directory Select.
+ - [FIXED]		Setting of locale at startup.
+ - [CHANGED]	AudioPlayer instance encapsulated in the PlaylistManager. 
+ - [CHANGED]	Using ItemRenderer for Playlist for improved performance.
+ - [CHANGED]	Shuffling starts playing from the first track only if the player was already playing.
+ - [CHANGED]	Default playlist stores unshuffled playlist even if it is shuffled when closing.
+ - [CHANGED]	File Loading Progress bar is displayed as soon as the user has selected a folder 
+ 				instead of when the first file was loaded. 
+ - [ADDED]		Added Application Logging Module.
+ - [CHANGED]	Minor UI Enhancements.
+
+Triton Player 1.2 [May 2011]
+ - [REMOVED]	Logging platform as it seemed surplus.
+ - [ADDED]		Save settings and default playlist on ALT + F4.
+ - [CHANGED]	Localization String in en_US updated.
+ - [FIXED]		Null Pointer Exception fixed in PlaylistManager.
+ - [ADDED]		Seekbar for player!
+ - [CHANGED]	Application settings stored as a binary file to speed up
+ 				startup time and increase performance.
+ - [ADDED]		SeekBar functionality on Paused state.
+ - [CHANGED]	sndbarlib updated to 1.0.
+ - [OPTIMIZED]	Several Code Optimizations. 
+ - [ISSUE]		Clicking on Seekbar position might not always doSeek properly.
+ - [FIXED]		Mute icon was not toggling properly.
+ - [OPTIMIZED]	Updating of TrackInfo on UI.
+ - [CHANGED]	sndbarlib updated to 1.1, with optimizations.
+ - [OPTIMIZED] 	Removed many unnecessary function calls.
+ 
+ Triton Player 1.3 [June 2011]
+ - [CHANGED]	SettingsManager redefined.
+ - [CHANGED]	Events Reordered.
+ - [ADDED]		Remember last played track no and position when the player is closed.
+ - [ADDED]		Update InfoView when a Track is added or removed.
+ - [CHANGED]	Playlist Track no updated when a track is removed.
+ - [OPTIMIZED]	Saving settings on Application Exit.
+ - [CHANGED]	Shuffling doesn't restart from the beginning with a new track.
+ - [DROPPED]	Reordering the playlist acting weierd, reorderTrack() function still available
+ 				inside PlaylistManager.
+ - [CHANGED]	Styling of application.
+ - [CHANGED]	Properly positioned Close and Minimize buttons.
+ - [ADDED]		Themes!
+ - [ADDED]		ThemeManager to manage Themes.
+ - [CHANGED]	Settings read in preinitialize and runtime style loaded 
+ 				before application is loaded.
+ - [CHANGED]	UI Layout.
+ - [ADDED]		States and transitions for UI.
+ - [OPTIMIZED]	Code for Compact Mode toggle.
+ - [CHANGED]	UI on PlaylistView.
+ - [OPTIMIZED]	Improved Startup Speed.
+ - [ISSUE]		Minor flicker on startup if in Compact mode.
+ - [CHANGED]	Language tab from SettingsPanel renamed to Other.
+ - [ADDED]		Option to chnage the theme from Settings Panel.
+ - [REMOVED]	Playlist Reorder codes.
+ 
+ Triton Player 1.3 [July 2011]
+ - [CHANGED]	SelectionColor of playlist item updated when the theme is changed.
+ - [CHANGED]	Localization text for themes.
+ - [CHANGED]	SettingsPanel layout.
+ - [CHANGED]	Current theme and locale are pre-selected in SettingsPanel.
+ - [CHANGED]	Tracks added in Shuffled Mode are added to the original collection at the end.
+ - [FIXED]		Fixed minor null exceptions introduced with new features.
+ - [CHANGED]	Minimize To Tray is false by default.
+ - [CHANGED]	Fix for total time calculation in PlaylistView.
+ 
+ Triton Player 1.3 [August 2011]
+ - [ADDED]		Remembers the PlaylistView's Scroll position on close.
+ - [ADDED]		About Panel Displays player build version also.
+ - [OPTIMIZED]	Code for updating playlist in PlaylistView.
+ - [OPTIMIZED]	Improved calculation of track index in PlaylistItemRenderer,
+ 				removed unnecessary listeners, objects and functions.
+ - [FIXED]		Bug that the DropDown backgrounds were transparent in SettingsPanel.
+ - [OPTIMIZED]	Reduced the size of the theme files, Startup time should be increased.
+ - [OPTIMIZED]	Font file embedded into the main application, instead of being embedded
+ 				in the Theme files as well as being part of the final build.
+ - [ADDED]		Drop Shaddow for Logo in About window.
+ - [FIXED]		Bug fix for loss of focus after a PlaylistItem is selected and
+ 				the user presses shortcut for Compact Mode.
+ - [FIXED]		Bug fix for playlist scrolling to first item when a playlist
+ 				item is deleted.

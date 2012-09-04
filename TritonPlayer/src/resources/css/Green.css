@@ -1,0 +1,284 @@
+/**
+ * Triton Player Skin
+ * Minty Green 0.5
+ * June 2011
+ */
+
+/*----------------------*/
+/* Type Selector Styles */
+/*----------------------*/
+Application
+{
+	themeColor: #9C9C65;
+}
+HSlider
+{
+	thumb-skin: ClassReference(null);
+	invertThumbDirection: true;
+	showTrackHighlight: true;
+	themeColor: #78D13B;
+	thumbColor: #ACFF73;
+	trackColor: #292931;
+}
+ProgressBar
+{
+	bar-color:#78D13B;
+	track-colors:#404040,#404040;
+	border-color:#000000;
+	border-style:solid;
+	border-thickness:1px;
+}
+ScrollBar
+{
+	trackSkin: Embed(source='green/track.png', scaleGridLeft=6, scaleGridRight=7, scaleGridTop=26,scaleGridBottom=330);
+	thumbUpSkin:Embed(source='green/thumb_up.png', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=120);
+	thumbOverSkin:Embed(source='green/thumb_over.png', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=120);
+	thumbDownSkin:Embed(source='green/thumb_over.png', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=120); 
+	upArrowUpSkin:Embed(source='green/top_arrow_up.png');
+	upArrowDownSkin:Embed(source='green/top_arrow_over.png');
+	upArrowOverSkin:Embed(source='green/top_arrow_over.png');
+	downArrowUpSkin:Embed(source='green/bottom_arrow_up.png');
+	downArrowDownSkin:Embed(source='green/bottom_arrow_over.png');
+	downArrowOverSkin:Embed(source='green/bottom_arrow_over.png'); 
+}
+ToolTip
+{
+    backgroundAlpha: 0.85;
+    backgroundColor: #D1D1AE;
+    fontWeight: bold;
+	color: #3A3911;
+}
+FXSlider
+{
+	thumb-color: #78D13B;
+	theme-color: #C3D97D;
+	track-color: #a1a1a1;
+}
+/*ControlButton
+{
+	dividerRightColor: #9C9C65;
+	dividerLeftColor: #D4D4B4;
+}*/
+Visualization
+{
+	audioFillColor: #2C6319;
+	audioLineColor: #78D13B;
+}
+InfoView
+{
+	glowEffectColor: #78D13B;
+}
+.dividerRightColor
+{
+	background-color: #ACFF73;
+}
+.dividerLeftColor
+{
+	background-color: #2C6319;
+}
+/*-----------------------*/
+/* Class Selector Styles */
+/*-----------------------*/
+
+/* Canvas Styles */
+.outerCanvasGradient
+{
+	angle: 90;
+	fillColors: #C2C4C2, #C2C4C2;
+	border-style:solid;
+	border-thickness-top :5; 
+	border-thickness-bottom:10;
+	border-thickness-right:10;
+	border-thickness-left:10;
+   	border-color:#000000;
+	cornerRadius: 8;
+	alpha: 0.4;
+} 
+.outerCanvasGradientAlt
+{
+	fillColors:#3A3911, #696930;
+	border-style:solid;
+	border-thickness-top :5; 
+	border-thickness-bottom:10;
+	border-thickness-right:10;
+	border-thickness-left:10;
+   	border-color:#999999;
+	cornerRadius: 8;
+	angle:270;
+}
+.innerCanvasGradient
+{
+	 fillColors: #292931, #292931, #292931;
+	 angle:90;
+	 border-style:none;
+   	 cornerRadius: 8;	
+}
+.modalWindowCanvas
+{
+	fillColors: #ffffff, #f4f4f4;
+	fill-alphas:0.4, 0.4;
+	angle:270;
+	corner-radius:8;
+}
+.controlsBackgroundNormal
+{
+	fillColors:#2C6319,#ACFF73;
+	angle:90;
+}
+.controlsBackgroundHighlight
+{
+	fillColors:#ACFF73, #2C6319;
+	angle:90;
+}
+.removeItemStyle
+{
+	fillColors: #78D13B, #C6FFB5;
+	angle:90;
+	color:#ffffff;
+	border-style:solid;
+	border-color:#ffffff;
+	border-thickness:1px;
+	cornerRadius: 4;
+	font-size:12px;
+	fontFamily:embeddedCalibriFont;
+}
+.highlightStyle
+{
+	background-color:#ffffff;
+	background-alpha:0.2;
+}
+/* Text Styles */
+.applicationTitleText
+{
+	color:#000000;
+	font-size:12px;
+	font-weight:bold;
+}
+.trackDetailsStyle
+{
+	font-size:16;
+	color:#78D13B;
+	fontFamily:embeddedCalibriFont;
+}
+.scrollingTextStyle
+{
+	font-size:12;
+	color:#f4f4f4;
+}
+.playlistItemNormal
+{
+	font-size:14;
+	color:#FFFFFF;
+	fontFamily:embeddedCalibriFont;
+}
+.playlistItemHighlighted
+{
+	font-size:14;
+	color:#121212;
+	background-color:#2C6319;
+	fontFamily:embeddedCalibriFont;
+}
+.playlistItemSelected
+{
+	font-size:14;
+	color:#000000;
+	background-color:#78D13B;
+	fontFamily:embeddedCalibriFont;
+}
+.timerTextStyle
+{
+	font-size:14;
+	color:#FFFFFF;
+	fontFamily:embeddedCalibriFont;
+}
+.smallInfoText
+{
+	font-size:12;
+	color: #f2f2f2;
+	fontFamily:embeddedCalibriFont;
+}
+.settingsTitleText
+{
+	font-size:14;
+	font-weight:bold;
+	color:#ffffff;
+}
+.settingsContentText
+{
+	font-size:12;
+	color:#ffffff;
+	text-roll-over-color:#FFFFFF;
+	text-selected-color:#FFFFFF;
+}
+
+/* Other styles */
+.playlistStyle
+{
+	border-alpha: 0;
+	focus-alpha: 0;
+	backgroundAlpha: 0;
+	corner-radius: 8;
+   	rollOverColor: #2C6319;
+   	textRollOverColor: #121212;
+   	borderStyle: none;
+   	selectionColor: #78D13B;
+   	corner-radius: 8;
+   	color: #ffffff;
+   	font-size: 14;
+   	fontWeight: normal;
+   	fontFamily: embeddedCalibriFont;
+}
+.linkButtonStyle
+{
+	color: #eeeeee;
+	roll-over-color: #78D13B;
+	textRollOverColor:#ffffff;
+	selection-color:#2C6319;
+}
+.buttonStyle
+{
+   cornerRadius: 8;
+   highlightAlphas: 0.62, 0.42;
+   fillAlphas: 0.82, 0.4, 0.75, 0.65;
+   fillColors: #78D13B, #2C6319, #2C6319, #78D13B;
+   color: #000000;
+   borderColor: #fefefe;
+   themeColor: #2C6319;
+   text-roll-over-color:#eeeeee;
+}
+.checkBoxStyle
+{
+   	fillAlphas: 1,1;
+   	fillColors: #ffffff,#ffffff;
+   	borderColor: #78D13B;
+   	themeColor: #78D13B;
+   	font-size:12;
+	color:#ffffff;
+	text-roll-over-color:#eeeeee;
+	text-selected-color:#eeeeee;
+}
+.comboBoxStyle
+{
+   cornerRadius: 4;
+   highlightAlphas: 0.62, 0.42;
+   fillAlphas: 0.82, 0.4, 0.75, 0.65;
+   fillColors: #78D13B, #2C6319, #2C6319, #78D13B;
+   color: #000000;
+   borderColor: #fefefe;
+   themeColor: #2C6319;
+   text-roll-over-color:#eeeeee;
+   text-selected-color:#eeeeee;
+}
+
+/* Separator used to divide sections in SettingsPanel */
+.separatorStyle
+{
+	background-color: #78D13B;
+}
+
+/*Fonts
+@font-face
+{
+	src:url("../fonts/calibri.ttf");
+	font-family:embeddedCalibriFont;
+}*/

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	creationComplete="init()">
+	
+	<mx:Script>
+		<![CDATA[
+			import com.triton.events.TritonPlayerEvent;
+			import mx.core.Application;
+			import com.triton.model.ModelLocator;			
+			import com.triton.assets.LayoutAssets;
+			import com.triton.custom.CustomEventDispatcher;
+			
+			[Bindable]
+			private var assets:LayoutAssets;
+			[Bindable]
+			private var model:ModelLocator;
+			private var eventDispatcher:CustomEventDispatcher;
+			
+			/**
+			 * The init() method to initialize variables and event handlers
+			 */
+			private function init():void
+			{
+				assets = LayoutAssets.getInstance();
+				model = ModelLocator.getInstance();
+				eventDispatcher = CustomEventDispatcher.getInstance();
+				
+				this.draggableArea.addEventListener(MouseEvent.MOUSE_DOWN, startWindowDrag);
+				this.draggableArea.addEventListener(MouseEvent.MOUSE_UP, stopWindowDrag);
+			}
+			
+			/**
+			 * Method to handle the window drag start
+			 */
+			private function startWindowDrag(event:MouseEvent):void{
+				(Application.application as TritonPlayer).outerWrapper.startDrag();				
+			}
+			
+			/**
+			 * Method to handle the window drag stop
+			 */
+			private function stopWindowDrag(event:MouseEvent):void{
+				(Application.application as TritonPlayer).outerWrapper.stopDrag();
+			}
+			
+			/**
+			 * Function called when the Close Button is pressed
+			 */
+			private function onCloseButtonClick():void{
+				eventDispatcher.dispatchEvent(new TritonPlayerEvent(
+					TritonPlayerEvent.CLOSE_BUTTON_PRESSED));
+			}
+			
+			/**
+			 * Function called when the Minimize button is clicked
+			 */
+			private function onMinimizeButtonClick():void{
+				eventDispatcher.dispatchEvent(new TritonPlayerEvent(
+					TritonPlayerEvent.MINIMIZE_BUTTON_PRESSED));
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:HBox width="100%" height="100%" verticalGap="0" horizontalGap="0" 
+		verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<mx:HBox id="draggableArea" width="85%" height="100%" 
+			verticalGap="0" horizontalGap="0" mouseChildren="false" 
+			verticalAlign="middle" horizontalAlign="left" 
+			useHandCursor="true" buttonMode="true">
+			<mx:Image id="applicationIcon" source="{assets.applicationIcon_16}" 
+				width="10" height="10"/>
+			<mx:Spacer width="4" height="100%"/>				
+			<mx:Label id="applicationTitle" styleName="applicationTitleText" 
+				text="{model.APPLICATION_TITLE}"/>
+		</mx:HBox>
+		<mx:HBox width="15%" height="100%" verticalGap="0" horizontalGap="0"
+			verticalScrollPolicy="off" horizontalScrollPolicy="off" 
+			horizontalAlign="right" verticalAlign="middle">
+			<mx:Image id="minimizeButton" source="{assets.minimizePlayerButton}" 
+				toolTip="{resourceManager.getString('resources','lbl_minimise')}"
+				click="onMinimizeButtonClick()" buttonMode="true" useHandCursor="true"/>
+			<mx:Spacer width="5" height="100%"/>
+			<mx:Image id="closeButton" source="{assets.closePlayerButton}" 
+				toolTip="{resourceManager.getString('resources','lbl_close')}"
+				click="onCloseButtonClick()" buttonMode="true" useHandCursor="true"/>
+		</mx:HBox>
+	</mx:HBox>
+	
+</mx:Canvas>

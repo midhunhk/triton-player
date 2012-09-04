@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	creationComplete="init()" xmlns:custom="com.triton.custom.*">
+	
+	<mx:Metadata>
+		[Exclude(name="playlistButtonsContainer", kind="property")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			import com.triton.events.TritonPlayerEvent;
+			import com.triton.vo.SettingsVO;
+			import mx.managers.DragManager;
+			import mx.events.DragEvent;
+			import com.triton.renderers.PlaylistItemRenderer;
+			import mx.collections.ArrayCollection;
+			import com.triton.utils.Utils;
+			import com.triton.model.ModelLocator;
+			import com.triton.assets.LayoutAssets;
+			import com.sndbar.vo.TrackVO;
+			import com.triton.events.PlaylistEvent;
+			import com.triton.custom.CustomEventDispatcher;
+			import com.triton.managers.PlaylistManager;
+			import com.triton.utils.FileOperations;
+			
+			//-----------------------------------------------------------------
+			//
+			//	Variables
+			//
+			//-----------------------------------------------------------------
+			
+			private var eventDispatcher:CustomEventDispatcher;
+			private var playlistManager:PlaylistManager;
+			private var fileOperations:FileOperations;
+			
+			[Bindable]
+			private var assets:LayoutAssets;
+			[Bindable]
+			private var model:ModelLocator;
+			
+			//-----------------------------------------------------------------
+			//
+			//	Methods
+			//
+			//-----------------------------------------------------------------
+			
+			private function init():void
+			{
+				model = ModelLocator.getInstance();
+				assets = LayoutAssets.getInstance();
+				eventDispatcher = CustomEventDispatcher.getInstance();
+				playlistManager = PlaylistManager.getInstance();
+				
+				fileOperations = new FileOperations();
+				
+				eventDispatcher.addEventListener(TritonPlayerEvent.SETTINGS_LOADED, onSettingsLoaded);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_PLAY_CHANGE, updatePlaylist);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_SHUFFLED, updatePlaylist);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_CHANGE, updatePlaylist);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_RESET, updatePlaylist);
+				eventDispatcher.addEventListener(PlaylistEvent.FILE_LOADED, onFileLoad);
+				
+				setPlaylistData();
+			}
+			
+			/**
+			 * Override the styleChanged method to know when the style
+			 * has changed. 
+			 */
+			override public function styleChanged(styleProp:String):void
+			{
+				super.styleChanged(styleProp);
+				
+				updatePlaylistStyle();
+			}
+			
+			/**
+			 * This method will update the selectionColor of the playlist
+			 * when the style has been changed.
+			 */
+			private function updatePlaylistStyle():void
+			{
+				try
+				{
+					var cssDeclaration:CSSStyleDeclaration = 
+						StyleManager.getStyleDeclaration(".playlistStyle");
+					if(null != cssDeclaration)
+					{
+						var selectionColor:uint = 
+							cssDeclaration.getStyle("selectionColor");
+						playlist.setStyle("selectionColor", selectionColor);
+					}
+				}
+				catch(error:Error)
+				{
+					trace(error.message);
+				}
+			}
+			/**
+			 * Update the Playlist based on the collection from playlist manager
+			 */
+			private function updatePlaylist(event:PlaylistEvent):void
+			{
+				try
+				{
+					// Avoid updating the dataProvider unnecessarily
+					if(event.type != PlaylistEvent.PLAYLIST_PLAY_CHANGE)
+					{
+						var scrollPos:Number = playlist.verticalScrollPosition;
+						setPlaylistData();
+						playlist.verticalScrollPosition = scrollPos;
+					}
+					playlist.selectedIndex = playlistManager.getCurrentTrackIndex();
+				}
+				catch(error:Error)
+				{
+					trace(error.message);
+				}
+			}
+			
+			/**
+			 * This method will update the playlist with the currentPlaylist
+			 * and also the playlistTime.
+			 */
+			private function setPlaylistData():void
+			{
+				playlist.dataProvider = playlistManager.getPlaylistColl();
+				
+				updatePlaylistTimeText();
+			}
+			
+			/**
+			 * Invoked when the settings has been loaded
+			 */
+			private function onSettingsLoaded(event:TritonPlayerEvent):void
+			{
+				eventDispatcher.removeEventListener(TritonPlayerEvent.SETTINGS_LOADED, 
+					onSettingsLoaded);
+				playlist.selectedIndex = event.settingsVo.trackIndex;
+				playlist.verticalScrollPosition = event.settingsVo.playlistScrollPos;
+			}
+			
+			/**
+			 * This method will display the total time of the playlist
+			 */
+			private function updatePlaylistTimeText():void
+			{
+				var playlistTotalTime:Number = 0;
+				var trackCount:int = playlistManager.getPlaylistLength();
+				var currentPlaylistColl:ArrayCollection = 
+					playlistManager.getPlaylistColl();
+					
+				// Calculate the total duration in the playlist
+				for(var i:int=0; i < trackCount; i++)
+					playlistTotalTime += int(currentPlaylistColl[i].duration);
+				
+				playlistTotalTimeText.text = 
+					Utils.formatTimeString(playlistTotalTime);
+				
+				totalTrackCountText.text = trackCount + " track";
+				if(trackCount > 1)
+					totalTrackCountText.text += "s"; 
+			}
+			
+			//-------------------------
+			// Button Click Handlers
+			//-------------------------
+			
+			private function onAddFileButtonClick():void{
+				fileOperations.fileOpen();				
+			}
+			
+			private function onAddDirButtonClick():void{
+				fileOperations.dirOpen();				
+			}
+			
+			private function onClearListClick():void{
+				playlistManager.clearPlaylist();
+			}
+			
+			private function onSaveListClick():void{
+				// open browse for save file
+				fileOperations.fileSave();
+			}
+			
+			private function onLoadListClick():void{
+				fileOperations.selectFile();
+			}
+			
+			//-------------------------
+			// Event Handlers
+			//-------------------------
+			
+			/**
+			 * Function called when files are being loaded
+			 */
+			private function onFileLoad(event:PlaylistEvent):void
+			{
+				progressContainer.alpha = 0.8;
+				fileLoadProgress.setProgress(model.itemsReadCount, 
+					model.tempItemCount);
+				
+				// Hide the progressbar if data complete
+				if(model.itemsReadCount > 0 && 
+					model.itemsReadCount == model.tempItemCount){
+					fadeOutEffect.play([progressContainer]);
+				}
+			}
+			
+			/**
+			 * Reset the Selection highlight to the current playing track
+			 */
+			private function onSelectionChange(event:Event):void
+			{
+				playlist.selectedIndex = playlistManager.getCurrentTrackIndex();
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<!--effects-->
+	<mx:Fade id="fadeOutEffect" duration="1000" alphaFrom="1" alphaTo="0"/>
+	
+	<!--layout-->
+	<mx:VBox id="outerWrapper" width="100%" height="100%"
+		verticalGap="0" horizontalGap="0"
+		verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<mx:Spacer width="100%" height="0.5%"/>
+		
+		<mx:Canvas width="100%" height="89%" 
+			verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			
+			<mx:HBox id="playlistContainer" width="100%" height="100%" 
+				verticalGap="0" horizontalGap="0"
+				verticalAlign="middle" horizontalAlign="center"
+				verticalScrollPolicy="off" horizontalScrollPolicy="off">
+				<mx:List id="playlist" width="98%" height="98%"
+					horizontalScrollPolicy="off"
+					styleName="playlistStyle"
+					itemRenderer="com.triton.renderers.PlaylistItemRenderer"/>
+			</mx:HBox>
+			
+			<mx:HBox id="progressContainer" width="100%" height="1%"
+				bottom="0" horizontalCenter="0" alpha="0"
+				verticalAlign="middle" verticalGap="0" horizontalGap="0">
+				<mx:Spacer width="5%"/>
+				<mx:Label text="{resourceManager.getString('resources','lbl_loading')}"
+					width="10%" styleName="smallInfoText" verticalCenter="0"/>
+				<mx:ProgressBar id="fileLoadProgress" height="8" mode="manual"
+					label="" width="80%"/>
+				<mx:Spacer width="5%"/>
+			</mx:HBox>
+		</mx:Canvas>
+		
+		<mx:HBox id="playlistButtonsContainer" width="100%" height="10.5%" 
+			verticalGap="0" horizontalGap="0">
+			<custom:ControlButton width="32"
+				imageTitle="{resourceManager.getString('resources','lbl_addFile')}" 
+				imagePath="{assets.addFileIcon}" click="onAddFileButtonClick()"/>
+			<custom:ControlButton width="32"
+				imageTitle="{resourceManager.getString('resources','lbl_addFolder')}"
+				imagePath="{assets.addDirIcon}" click="onAddDirButtonClick()"/>
+			<custom:ControlButton width="32"
+				imageTitle="{resourceManager.getString('resources','lbl_clearPlaylist')}"
+				imagePath="{assets.clearListIcon}" click="onClearListClick()"/>
+			<custom:ControlButton width="32"
+				imageTitle="{resourceManager.getString('resources','lbl_savePlaylist')}"
+				imagePath="{assets.saveListIcon}" click="onSaveListClick()"/>
+			<custom:ControlButton width="32"
+				imageTitle="{resourceManager.getString('resources','lbl_loadPlaylist')}"
+				imagePath="{assets.loadListIcon}" click="onLoadListClick()"/>
+			<custom:GradientCanvas id="gradientCanvas" width="70%" height="100%" 
+				styleName="controlsBackgroundNormal"
+				verticalScrollPolicy="off" horizontalScrollPolicy="off">
+				<mx:Label id="totalTrackCountText" right="60" verticalCenter="0"
+					styleName="smallInfoText"/>
+				<mx:Label id="playlistTotalTimeText" right="10" verticalCenter="0"
+					styleName="smallInfoText"/>
+			</custom:GradientCanvas>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:Canvas>

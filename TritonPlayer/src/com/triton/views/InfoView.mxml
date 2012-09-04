@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	creationComplete="init()" 
+	xmlns:custom="com.triton.custom.*" 
+	xmlns:ui="com.fusiox.ui.*" 
+	xmlns:controls="com.fxcomponents.controls.*">
+	
+	
+	<mx:Metadata>
+		[Exclude(name="visualizationContainer", kind="property")]
+		[Exclude(name="scrollingTextContainer", kind="property")]
+		[Exclude(name="scrollingText", kind="property")]
+		[Exclude(name="glowEffect", kind="property")]
+		[Exclude(name="visualization", kind="property")]
+		[Exclude(name="trackDetailsContainer", kind="property")]
+		[Exclude(name="artist_name", kind="property")]
+		[Exclude(name="track_name", kind="property")]
+		[Exclude(name="album_name", kind="property")]
+		[Exclude(name="track_count", kind="property")]
+		[Exclude(name="timerText", kind="property")]
+		[Exclude(name="statusDisplay", kind="property")]
+		[Exclude(name="playPauseStatus", kind="property")]
+		[Exclude(name="shuffleModeStatus", kind="property")]
+		[Exclude(name="muteStatus", kind="property")]
+		[Exclude(name="seekBarContainer", kind="property")]
+		[Exclude(name="seekBar", kind="property")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import mx.events.SliderEvent;
+			import com.fusiox.VisualizationType;
+			import com.sndbar.events.TimerTickEvent;
+			import com.sndbar.player.PlayerMode;
+			import com.sndbar.vo.TrackVO;
+			import com.triton.assets.LayoutAssets;
+			import com.triton.custom.CustomEventDispatcher;
+			import com.triton.custom.SliderButton;
+			import com.triton.model.ModelLocator;			
+			import com.triton.events.PlaylistEvent;
+			import com.triton.events.TritonPlayerEvent;
+			import com.triton.managers.PlaylistManager;
+			import com.triton.utils.SpeakerModes;
+			import com.triton.utils.Utils;
+			import com.triton.vo.SettingsVO;
+		
+			//-----------------------------------------------------------------
+			//
+			// Variables
+			//
+			//-----------------------------------------------------------------
+			
+			[Bindable]
+			private var assets:LayoutAssets;
+			private var cachedTrackVo:TrackVO;
+			private var model:ModelLocator;			
+			private var isSeeking:Boolean;
+			private var trackLength:int;
+			private var isThumbDragged:Boolean;
+			private var eventDispatcher:CustomEventDispatcher;
+			private var playlistManager:PlaylistManager;
+			
+			private var types:Array = new Array( 
+				VisualizationType.WAVE, 
+				VisualizationType.BARS, 
+				VisualizationType.LINE,
+				VisualizationType.NONE);
+			
+			//-----------------------------------------------------------------
+			//
+			// Methods
+			//
+			//-----------------------------------------------------------------
+			
+			/**
+			 * Override the styleChanged method to know when the stle
+			 * has changed. 
+			 */
+			override public function styleChanged(styleProp:String):void
+			{
+				super.styleChanged(styleProp);
+				
+				if(styleProp == "glowEffectColor")
+				{
+					setCustomStyles();
+				}
+			}
+			
+			/**
+			 * The init() method to initialize variables and event handlers
+			 */
+			private function init():void
+			{
+				assets 			= LayoutAssets.getInstance();
+				model 			= ModelLocator.getInstance();
+				isSeeking 		= false;
+				isThumbDragged 	= false;
+				eventDispatcher = CustomEventDispatcher.getInstance();
+				playlistManager = PlaylistManager.getInstance();
+				
+				model.scrollingTextInstance = scrollingText;
+				
+				setCustomStyles();
+				
+				updateTimerText();
+				
+				// Set up listner for PlaylistEvent
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_PLAY_CHANGE, onPlayerModeChanged);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_MUTE_CHANGE, onMuteChanged)
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_PAUSED, onPlaylistPaused);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_STOP, onPlayStop);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_SHUFFLED, playlistShuffled);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_CHANGE, onPlaylistChange);
+				eventDispatcher.addEventListener(TritonPlayerEvent.SETTINGS_LOADED, onSettingsLoaded);
+				eventDispatcher.addEventListener(TimerTickEvent.TIMER_TICK, onTimerComplete);
+			}
+			
+			//-------------------------
+			// Event Handlers
+			//-------------------------
+			
+			/**
+			 * Invoked when the Settings file is loaded.
+			 */
+			private function onSettingsLoaded(event:TritonPlayerEvent):void
+			{
+				eventDispatcher.removeEventListener(
+					TritonPlayerEvent.SETTINGS_LOADED, onSettingsLoaded);
+				this.visualization.type = types[model.visualizationIndex];
+				
+				// Get the track index and update the InfoView
+				var settingsVo:SettingsVO = event.settingsVo;
+				var trackIndex:int = settingsVo.trackIndex;
+				var trackVo:TrackVO = playlistManager.getTrackVo( trackIndex);
+				playlistManager.setCurrentTrackIndex( trackIndex);
+				playlistManager.setPausePosition(settingsVo.trackPosition * 1000);
+				
+				updateInfoView( trackVo);
+				var duration:int = (trackVo)? trackVo.duration : 0;
+				updateTimerText(settingsVo.trackPosition, duration);
+				
+				// Update the seekBar position
+				if(duration > 0)
+				{
+					var perc:Number = (settingsVo.trackPosition / duration)
+					seekBar.value = perc * 100;
+				}
+			}
+			
+			/**
+			 * Invoked when the Player mode has changed
+			 */
+			private function onPlayerModeChanged(event:PlaylistEvent):void
+			{
+				var trackVO:TrackVO = playlistManager.getCurrentTrackVo();
+				// update the displayed info only if its new
+				if(trackVO != null && trackVO != cachedTrackVo)
+				{
+					updateInfoView(trackVO);
+				}
+				
+				// Play effect over play only if itsnt in playState
+				if(playPauseStatus.source != assets.playStatusIcon)
+				{
+					playPauseStatus.source = assets.playStatusIcon;
+					glowEffect.play([playPauseStatus]);
+				}
+				var pos:int = playlistManager.getCurrentPosition();
+            	trackLength = playlistManager.getTrackLength();
+            	updateTimerText(pos, trackLength);
+			}
+			
+			/**
+			 * Invoked when the playlist has been shuffled
+			 */
+			private function playlistShuffled(event:PlaylistEvent):void
+			{
+				updateInfoView(cachedTrackVo);
+				if( playlistManager.isShuffledPlay())
+				{
+					shuffleModeStatus.alpha = 1;
+					glowEffect.play([shuffleModeStatus]);
+				}
+				else
+					shuffleModeStatus.alpha = 0.5
+			}
+			
+			/**
+			 * This method is invoked when a PLAYLIST_CHANGE event is recieved
+			 */
+			private function onPlaylistChange(event:PlaylistEvent):void
+			{
+				updateInfoView(cachedTrackVo);
+			}
+			
+			private function onPlayStop(event:PlaylistEvent):void
+			{
+				if(isSeeking == false)
+				{
+					playPauseStatus.source =  assets.stopStatusIcon;
+					glowEffect.play([playPauseStatus]);
+				}
+			}
+			
+			private function onMuteChanged(event:PlaylistEvent):void
+			{
+				if(model.currentSpeakerState == SpeakerModes.SPEAKER_ON)
+					muteStatus.source = assets.muteOnStatusIcon;
+				else
+					muteStatus.source = assets.muteOffStatusIcon;
+				glowEffect.play([muteStatus]);
+			}
+			
+			private function onPlaylistPaused(event:PlaylistEvent):void
+			{
+				if(isSeeking == false)
+				{
+					playPauseStatus.source = assets.pauseStatusIcon;
+					glowEffect.play([playPauseStatus]);
+				}
+			}
+			
+			private function onTimerComplete(event:Event):void 
+			{
+            	var pos:int = playlistManager.getCurrentPosition();
+            	// Update the seekBar if not doing seek operation
+            	if(isThumbDragged == false)
+            	{
+	            	if(playlistManager.getCurrentPlayerMode() == PlayerMode.PLAYER_PLAY)
+	            	{
+	            	 	var perc:Number = (pos / trackLength) * 100;
+	            	 	seekBar.value = perc;
+	            	}
+	            }
+            	updateTimerText(pos, trackLength);
+            }
+            
+            private function onChange(event:SliderEvent):void
+            {
+            	if(isThumbDragged == false)
+            	{
+            		doSeek(event);
+            	}
+            }
+			
+			private function onThumbDrag():void
+			{
+				isThumbDragged = true;
+			}
+			
+			private function onThumbRelease(event:SliderEvent):void
+			{
+				if(isThumbDragged = true)
+				{
+					isThumbDragged = false;
+					doSeek(event);
+				}
+			}
+			
+			//-------------------------
+			//	Other Functions
+			//-------------------------
+			
+			/**
+			 * This method updates the InfoView with the details from the
+			 * trackVo passed to it and updates the cachedTrackVo with it.
+			 */
+			private function updateInfoView(trackVO:TrackVO):void
+			{
+				if(trackVO != null)
+				{
+					var cti:int = playlistManager.getCurrentTrackIndex() + 1;
+					artist_name.text = trackVO.artist;
+					track_name.text = trackVO.title;
+					album_name.text = trackVO.album;
+					track_count.text = "Track " + cti + " / " + 
+						playlistManager.getPlaylistLength();
+					scrollingText.text = Utils.getScrollerText(trackVO);
+					// update the cached copy
+					cachedTrackVo = trackVO;
+				}
+			}
+			
+			/**
+			 * This method does the seeking
+			 */
+			private function doSeek(event:SliderEvent):void
+			{
+				isSeeking = true;
+				var currentMode:String = playlistManager.getCurrentPlayerMode();
+				if( currentMode == PlayerMode.PLAYER_PLAY ||
+					currentMode == PlayerMode.PLAYER_PAUSE)
+	            {
+	            	var continuePlaying:Boolean = 
+	            		(currentMode == PlayerMode.PLAYER_PLAY); 
+					playlistManager.playTrackFromPosition(event.value, 
+						continuePlaying);
+	            }
+	            else
+	            {
+	            	seekBar.value = 0;
+	            }
+				isSeeking = false;
+			}
+			
+			private function updateTimerText(currTime:Number = 0, 
+				totalTime:Number = 0):void
+			{
+				timerText.text = Utils.formatTimeString(currTime) + 
+					" / " + Utils.formatTimeString(totalTime);
+			}
+			
+			/**
+			 * This method sets the visualization styles and the color for the
+			 * glow effect from the external css file
+			 */
+			private function setCustomStyles():void
+			{
+				var glowEffectColor:uint = getStyle("glowEffectColor");
+				glowEffect.color = glowEffectColor;
+			}
+			
+			/**
+			 * Changes the Visualization Type
+			 */
+			private function changeVisType():void
+			{
+				model.visualizationIndex = 
+					(model.visualizationIndex + 1) % this.types.length;
+				this.visualization.type = this.types[model.visualizationIndex];
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Glow id="glowEffect" duration="800" alphaFrom="1"
+		alphaTo="0" blurXTo="15" blurYTo="15"/>
+	
+	<mx:VBox width="100%" height="100%" verticalGap="0" horizontalGap="0" 
+		verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<mx:Spacer width="100%" height="0.5%"/>
+		<mx:HBox id="scrollingTextContainer" width="100%" height="13%"
+			verticalGap="0" horizontalGap="0">
+			<mx:Spacer width="2%" height="100%"/>
+			<custom:ScrollingText id="scrollingText" width="96%"
+				direction="rightToLeft" speed="1"
+				verticalCenter="0" styleName="scrollingTextStyle"/>
+			<mx:Spacer width="2%" height="100%"/>
+		</mx:HBox>
+		<mx:Spacer width="100%" height="0.5%"/>
+		<mx:HBox width="100%" height="71%" verticalGap="0" horizontalGap="0"
+			verticalScrollPolicy="off" horizontalScrollPolicy="off" borderColor="#ffffff">
+			<mx:Spacer width="1%" height="100%"/>
+			<mx:Canvas id="visualizationContainer" width="50%" height="100%">
+				<ui:Visualization id="visualization" click="changeVisType()"
+					toolTip="{resourceManager.getString('resources','lbl_visualization')}"
+					width="100%" height="100%" verticalCenter="25"/>
+			</mx:Canvas>
+			
+			<mx:VBox id="trackDetailsContainer" width="49%" height="100%" verticalGap="0" horizontalGap="0"
+				verticalScrollPolicy="off" horizontalScrollPolicy="off" styleName="trackDetailsStyle">
+				<mx:Label id="artist_name" truncateToFit="true" 
+					width="{trackDetailsContainer.width}" height="20"/>
+				<mx:Spacer width="100%" height="0.5%"/>
+				<mx:Label id="track_name" truncateToFit="true" 
+					width="{trackDetailsContainer.width}" height="20"/>
+				<mx:Spacer width="100%" height="0.5%"/>
+				<mx:Label id="album_name" truncateToFit="true" 
+					width="{trackDetailsContainer.width}" height="20"/>
+				<mx:Spacer width="100%" height="0.5%"/>
+				<mx:Label id="track_count" truncateToFit="true" styleName="timerTextStyle" 
+					width="{trackDetailsContainer.width}" height="18"/>
+				<mx:Spacer width="100%" height="1.5%"/>
+				<mx:HBox width="100%" height="5%" verticalGap="0" 
+					horizontalGap="0" verticalAlign="middle">
+					<mx:Spacer width="2%" height="100%"/>
+					<mx:Label id="timerText" styleName="timerTextStyle" 
+						verticalCenter="0" horizontalCenter="0"/>
+					<mx:Spacer width="6%" height="100%"/>
+					<mx:HBox id="statusDisplay" width="40%" height="100%" 
+						verticalGap="0" horizontalGap="0" horizontalAlign="center">
+						<mx:Image id="playPauseStatus" source="{assets.playStatusIcon}" 
+							width="16" scaleContent="false" 
+							toolTip="{resourceManager.getString('resources','lbl_playerStatus')}"/>
+						<mx:Spacer width="6"/>
+						<mx:Image id="shuffleModeStatus" source="{assets.shuffleStatusIcon}" 
+							alpha="0.5" 
+							toolTip="{resourceManager.getString('resources','lbl_shuffleStatus')}"/>
+						<mx:Spacer width="6"/>
+						<mx:Image id="muteStatus" source="{assets.muteOnStatusIcon}"
+							width="16" scaleContent="false" 
+							toolTip="{resourceManager.getString('resources','lbl_muteStatus')}"/>
+					</mx:HBox>
+				</mx:HBox>
+			</mx:VBox>
+		</mx:HBox>
+		<mx:Spacer width="100%" height="0.5%"/>
+		<mx:HBox id="seekBarContainer" width="100%" height="14.5%" 
+			verticalGap="0" horizontalGap="0"
+			verticalAlign="middle" horizontalAlign="center">
+			
+			<mx:VBox width="96%" height="100%" verticalGap="0" horizontalGap="0"
+				verticalAlign="middle" horizontalAlign="center">
+				<mx:Spacer width="100%" height="30%"/>
+				
+				<controls:FXSlider id="seekBar" width="100%" height="40%"
+					thumbDrag="{onThumbDrag()}" change="{onChange(event);}"
+					thumbRelease="{onThumbRelease(event)}"/>
+				
+				<mx:Spacer width="100%" height="30%"/>
+			</mx:VBox>
+			
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:Canvas>

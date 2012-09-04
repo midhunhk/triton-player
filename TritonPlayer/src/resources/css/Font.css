@@ -1,0 +1,6 @@
+/*Fonts*/
+@font-face
+{
+	src: url("../fonts/calibri.ttf");
+	font-family: embeddedCalibriFont;
+}

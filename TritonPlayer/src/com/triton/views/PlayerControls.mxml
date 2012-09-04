@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	initialize="initializeHandler()"
+	creationComplete="creationCompleteHandler()" 
+	xmlns:custom="com.triton.custom.*">
+	
+	<mx:Metadata>
+		[Exclude(name="gradientCanvas", kind="property")]
+		[Exclude(name="gradientCanvas", kind="volumeSlider")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import mx.events.SliderEvent;
+			import mx.managers.PopUpManager;
+			import com.sndbar.player.PlayerVolume;
+			import com.sndbar.player.PlayerMode;
+			import com.triton.assets.LayoutAssets;
+			import com.triton.custom.CustomEventDispatcher;
+			import com.triton.custom.SliderButton;
+			import com.triton.custom.HighlightTrack;
+			import com.triton.events.PlaylistEvent;
+			import com.triton.events.TritonPlayerEvent;
+			import com.triton.managers.PlaylistManager;			
+			import com.triton.model.ModelLocator;			
+			import com.triton.utils.MenuConstants;
+			import com.triton.utils.SpeakerModes;
+			
+			//-----------------------------------------------------------------
+			//
+			// Variables
+			//
+			//-----------------------------------------------------------------
+			
+			[Bindable]
+			private var assets:LayoutAssets;
+			[Bindable]
+			private var model:ModelLocator;
+			
+			private var eventDispatcher:CustomEventDispatcher;
+			private var playlistManager:PlaylistManager;
+			private var currentVolume:Number;
+			
+			//-----------------------------------------------------------------
+			//
+			// Methods
+			//
+			//-----------------------------------------------------------------
+			
+			/**
+			 * Initialize handler to create objects and set up listeners
+			 */
+			private function initializeHandler():void
+			{
+				assets 	= LayoutAssets.getInstance();
+				model 	= ModelLocator.getInstance();
+				eventDispatcher = CustomEventDispatcher.getInstance();
+				playlistManager = PlaylistManager.getInstance();
+				eventDispatcher.addEventListener(TritonPlayerEvent.SETTINGS_LOADED, onSettingsLoaded);
+				eventDispatcher.addEventListener(TritonPlayerEvent.KEY_PRESSED, keyPressHandler);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_PLAY_CHANGE, onPlayChange);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_PAUSED, onPauseStop);
+				eventDispatcher.addEventListener(PlaylistEvent.PLAYLIST_STOP, onPauseStop);
+				eventDispatcher.addEventListener(TritonPlayerEvent.MENU_SELECTED, onNativeMenuSelect);
+			}
+			
+			/**
+			 * Creation Complete Handler to set properties for children
+			 */
+			private function creationCompleteHandler():void
+			{
+				volumeSlider.value = 1;
+			}
+			
+			//-------------------------
+			// Button Click Handlers
+			//-------------------------
+			
+			private function onPlayPauseClick():void
+			{
+				if(playlistManager.getCurrentPlayerMode() == PlayerMode.PLAYER_PLAY)
+				{
+					if(playPauseButton.imagePath == assets.playButton)
+						playPauseButton.imagePath = assets.pauseButton;
+					playlistManager.pausePlay();
+				}
+				else
+				{
+					if(playPauseButton.imagePath == assets.pauseButton)
+						playPauseButton.imagePath = assets.playButton;
+					playlistManager.playCurrentTrack();
+				}
+			}
+			
+			private function onPreviousClick():void{
+				playlistManager.playPreviousTrack();
+			}
+			
+			private function onNextClick():void{
+				playlistManager.playNextTrack();
+			}
+			
+			private function onStopClick():void{
+				playlistManager.stopPlay();
+			}
+			
+			private function onRepeatClick():void{
+				playlistManager.playCurrentTrack();
+			}
+			
+			private function onMuteClick():void
+			{
+				if(model.currentSpeakerState == SpeakerModes.SPEAKER_ON)
+				{
+					model.currentSpeakerState = SpeakerModes.SPEAKER_OFF;
+					currentVolume = playlistManager.getCurrentVolume();
+					playlistManager.setCurrentVolume(PlayerVolume.MIN_VOLUME);
+					speakerButton.imagePath = assets.speakerOnButton;
+				}
+				else
+				{
+					model.currentSpeakerState = SpeakerModes.SPEAKER_ON;
+					playlistManager.setCurrentVolume(currentVolume);
+					speakerButton.imagePath = assets.speakerOffButton;
+				}
+				// Dispatch the event
+				eventDispatcher.dispatchEvent(
+					new PlaylistEvent(PlaylistEvent.PLAYLIST_MUTE_CHANGE));
+			}
+			
+			private function onShuffleClick():void{
+				playlistManager.playInShuffledMode();
+			}
+			
+			private function onSettingsClick():void
+			{
+				if(model.isModalWindowVisible == false)
+				{
+					var settings:SettingsPanel = new SettingsPanel();
+					settings.width = 300;
+					settings.height = 280;
+					model.isModalWindowVisible = true;
+					PopUpManager.addPopUp(settings, this, false);
+					PopUpManager.centerPopUp(settings);
+				}
+			}
+			
+			private function onSliderChange(event:SliderEvent):void{
+				var sliderAmount:int = event.value;
+				setPlayerVolume(sliderAmount / 100);				
+			}
+			
+			private function onMouseWheel(event:MouseEvent):void{
+				volumeSlider.value += event.delta; 
+				setPlayerVolume(volumeSlider.value / 100);
+			}
+			
+			//-------------------------
+			// Event Handlers
+			//-------------------------
+			private function setPlayerVolume(value:Number):void{								
+				playlistManager.setCurrentVolume(value);
+			}
+			
+			private function togglePlaylistVisibility():void
+			{
+				model.isCompactMode = ! model.isCompactMode;
+				var compactModeEvent:TritonPlayerEvent =
+					new TritonPlayerEvent(TritonPlayerEvent.COMPACT_MODE)
+				eventDispatcher.dispatchEvent( compactModeEvent);
+			}
+			
+			private function onPlayChange(event:PlaylistEvent):void{
+				playPauseButton.imagePath = assets.pauseButton;
+			}
+			
+			private function onPauseStop(event:PlaylistEvent):void{
+				playPauseButton.imagePath = assets.playButton;
+			}
+			
+			private function onSettingsLoaded(event:TritonPlayerEvent):void
+			{
+				eventDispatcher.removeEventListener(TritonPlayerEvent.SETTINGS_LOADED, 
+					onSettingsLoaded);
+				volumeSlider.value = event.settingsVo.volume * 100;
+			}
+			
+			private function keyPressHandler(event:TritonPlayerEvent):void
+			{
+				if(event.keyCode == Keyboard.SPACE){
+					onPlayPauseClick();
+				}
+				else if(event.keyCode == 67){ // C - Compact mode
+					togglePlaylistVisibility();
+				}
+				else if(event.keyCode == 82){ // R - Repeat
+					onRepeatClick();
+				}
+				else if(event.keyCode == 80){ // p - Prvious
+					onPreviousClick();
+				}
+				else if(event.keyCode == 78){ // N - next
+					onNextClick();
+				}
+				else if(event.keyCode == 88){ // X - stop
+					onStopClick();
+				}
+				else if(event.keyCode == 77){ // M - mute
+					onMuteClick();
+				}
+				else if(event.keyCode == 83){ // S - shuffle
+					onShuffleClick();
+				}
+				else if(event.keyCode == 84){ // T - Settings
+					onSettingsClick();
+				}
+				else if(event.keyCode == 221){ // ] key
+					if(volumeSlider.value < 95){
+						volumeSlider.value += 5
+						setPlayerVolume(volumeSlider.value / 100);
+					}
+				}
+				else if(event.keyCode == 219){ // [ key
+					if(volumeSlider.value > 5){
+						volumeSlider.value -= 5
+						setPlayerVolume(volumeSlider.value / 100);
+					}
+				}
+			}
+			
+			private function onNativeMenuSelect(event:TritonPlayerEvent):void{
+				switch(event.selectedMenu)
+				{
+					case MenuConstants.MENU_ITEM_NEXT :
+						onNextClick();
+						break;
+					case MenuConstants.MENU_ITEM_PREV :
+						onPreviousClick();
+						break;
+					case MenuConstants.MENU_ITEM_MUTE :
+						onMuteClick();
+						break;
+					case MenuConstants.MENU_ITEM_STOP :
+						onStopClick();
+						break;
+					case MenuConstants.MENU_ITEM_PAUSE :
+						onPlayPauseClick();
+						break;
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:HBox id="controlsWrapper" width="100%" height="100%" verticalGap="0" horizontalGap="0"
+		verticalScrollPolicy="off" horizontalScrollPolicy="off" backgroundAlpha="0">
+		<custom:ControlButton imagePath="{assets.prevButton}" width="30" click="onPreviousClick()"
+			imageTitle="{resourceManager.getString('resources','lbl_previous',['P'])}"/>
+		<custom:ControlButton id="playPauseButton" width="30" click="onPlayPauseClick()"
+			imagePath="{assets.playButton}" imageTitle="{resourceManager.getString('resources','lbl_playPause')}"/>
+		<custom:ControlButton imagePath="{assets.nextButton}" width="30" click="onNextClick()" 
+			imageTitle="{resourceManager.getString('resources','lbl_next',['N'])}"/>
+		<custom:ControlButton imagePath="{assets.stopButton}" width="30" click="onStopClick()"
+			imageTitle="{resourceManager.getString('resources','lbl_stop',['X'])}"/>
+		<custom:ControlButton imagePath="{assets.repeatButton}" width="30" click="onRepeatClick()"
+			imageTitle="{resourceManager.getString('resources','lbl_repeat',['R'])}"/>
+		<custom:ControlButton imagePath="{assets.shuffleButton}" width="30" click="onShuffleClick()"
+			imageTitle="{resourceManager.getString('resources','lbl_shuffle',['S'])}"/>
+		<custom:ControlButton id="speakerButton" imagePath="{assets.speakerOffButton}" 
+			width="30" click="onMuteClick()"
+			imageTitle="{resourceManager.getString('resources','lbl_mute',['M'])}"/>
+		<custom:ControlButton imagePath="{assets.settingsButton}" width="30" click="onSettingsClick();"
+			imageTitle="{resourceManager.getString('resources','lbl_settings',['T'])}"/>		
+		<custom:ControlButton imagePath="{assets.compactModeButton}"
+			imageTitle="{resourceManager.getString('resources','lbl_toggleCompact',['C'])}" 
+			width="30" click="togglePlaylistVisibility()"/>
+		
+		<custom:GradientCanvas id="gradientCanvas" width="30%" height="100%" 
+			styleName="controlsBackgroundNormal"
+			verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:VBox width="99%" height="100%" verticalGap="0" horizontalGap="0">
+				<mx:Spacer width="100%" height="40%"/>
+				<mx:HSlider id="volumeSlider" 
+					minimum="0" maximum="100"
+					width="{gradientCanvas.width*.9}" height="2"
+					toolTip="{resourceManager.getString('resources','lbl_adjustVolume',['[/]'])}"
+					snapInterval="1" dataTipPrecision="0" liveDragging="true"
+					sliderThumbClass="{SliderButton}"
+					trackHighlightSkin="{HighlightTrack}"
+					change="onSliderChange(event)" mouseWheel="onMouseWheel(event)"/>
+			</mx:VBox>
+		</custom:GradientCanvas>
+		
+	</mx:HBox>
+	
+</mx:Canvas>

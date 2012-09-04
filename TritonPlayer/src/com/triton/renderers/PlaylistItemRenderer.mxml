@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	verticalGap="0" horizontalGap="0"
+	verticalScrollPolicy="off" horizontalScrollPolicy="off"
+	implements="mx.controls.listClasses.IDropInListItemRenderer"
+	doubleClickEnabled="true" width="100%" height="18" 
+	doubleClick="onDoubleClick(event)"
+	xmlns:custom="com.triton.custom.*">
+	
+	<mx:Metadata>
+		[Exclude(name="track_no", kind="property")]
+		[Exclude(name="track_title", kind="property")]
+		[Exclude(name="removeItemContainer", kind="property")]
+		[Exclude(name="duration", kind="property")]
+		[Exclude(name="gradientCanvas", kind="property")]
+		[Exclude(name="track_title_canvas", kind="property")]
+		[Exclude(name="fadeOutEffect", kind="property")]
+		[Exclude(name="containerCanvas", kind="property")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.listClasses.BaseListData;
+			import mx.controls.listClasses.ListBase;
+			import com.sndbar.vo.TrackVO;
+			import com.triton.custom.CustomEventDispatcher;
+			import com.triton.events.PlaylistEvent;
+			import com.triton.events.PlaylistItemEvent;
+			import com.triton.utils.Utils;
+			
+			//-----------------------------------------------------------------
+			//
+			//	Properties
+			//
+			//-----------------------------------------------------------------
+			
+			/**
+			 * @private
+			 * listData
+			 */
+			private var _listData:BaseListData;
+			
+			public function set listData(value:BaseListData):void
+			{
+				_listData = value;
+			}
+			
+			public function get listData():BaseListData
+			{
+				return _listData;
+			}
+			
+			/**
+			 * data
+			 */
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				
+				if(data && listData)
+					setData();
+			}
+			
+			override public function get data():Object
+			{
+				return super.data;
+			}
+			
+			//-----------------------------------------------------------------
+			//
+			//	Variables
+			//
+			//-----------------------------------------------------------------
+			
+			/**
+			 * @private
+			 */
+			private var eventDispatcher:CustomEventDispatcher = 
+				CustomEventDispatcher.getInstance();
+			
+			[Bindable]
+			private var trackNo:String;
+			[Bindable]
+			private var trackTitle:String;
+			[Bindable]
+			private var trackLength:String;
+			
+			//-----------------------------------------------------------------
+			//
+			//	Methods
+			//
+			//-----------------------------------------------------------------
+			
+			private function setData():void
+			{
+				var tempVo:TrackVO = TrackVO(data);
+				if(tempVo)
+				{
+					trackLength = Utils.formatTimeString(tempVo.duration);
+					if(tempVo.artist != null && tempVo.artist != "")
+						trackTitle = tempVo.artist + ' - ' + tempVo.title
+					else
+						trackTitle = tempVo.title;
+				}
+				// Calculate the trackNo
+				var scrollPos:Number = 
+					ListBase(listData.owner).verticalScrollPosition;
+				trackNo = (listData.rowIndex + scrollPos + 1).toString();
+			}
+			
+			//-----------------------------------------------------------------
+			//
+			//	Event Handlers
+			//
+			//-----------------------------------------------------------------
+			
+			/**
+			 * Invoked when the user double clicks the item
+			 */
+			private function onDoubleClick(event:MouseEvent):void
+			{
+				var playlistItemEvent:PlaylistItemEvent = 
+					new PlaylistItemEvent(PlaylistItemEvent.PLAYLIST_ITEM_SELECTED, 
+					this.data as TrackVO);
+				eventDispatcher.dispatchEvent(playlistItemEvent);
+			}
+			
+			/**
+			 * Invoked when the user clicks the remove button
+			 */
+			private function onRemoveItemClick():void
+			{
+				var playlistItemEvent:PlaylistItemEvent = 
+					new PlaylistItemEvent(PlaylistItemEvent.PLAYLIST_ITEM_REMOVED, 
+					data as TrackVO);
+				eventDispatcher.dispatchEvent(playlistItemEvent);
+			}
+			
+			private function onItemRollOver():void
+			{
+				removeItemContainer.visible = true;
+			}
+			
+			private function onItemRollOut():void
+			{
+				removeItemContainer.visible = false;
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Fade id="fadeOutEffect" alphaFrom="1" alphaTo="0" duration="100"/>
+	
+	<mx:Spacer width="100%" height="0.5%"/>
+	<mx:HBox id="containerCanvas" width="100%" height="99%"
+		rollOver="{onItemRollOver()}" rollOut="{onItemRollOut()}"
+		verticalGap="0" horizontalGap="0" 
+		verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<mx:Canvas width="8%" height="100%" horizontalScrollPolicy="off">
+			<mx:Label id="track_no" width="100%" text="{trackNo}" verticalCenter="0" textAlign="right"/>
+		</mx:Canvas>
+		<mx:Spacer width="1%" height="100%"/>
+		<mx:Canvas id="track_title_canvas" width="79%" height="100%" horizontalScrollPolicy="off" 
+				buttonMode="true" useHandCursor="true">
+			<mx:Label id="track_title" truncateToFit="true" width="{track_title_canvas.width}"
+				text="{trackTitle}" 
+				verticalCenter="0" buttonMode="true" useHandCursor="true"/>
+			<custom:GradientCanvas id="removeItemContainer"
+				right="2" top="0" bottom="0" visible="false" width="8%"
+				height="20" click="onRemoveItemClick()"
+				buttonMode="true" useHandCursor="true" mouseChildren="false"
+				toolTip="{resourceManager.getString('resources','lbl_removeFromPlaylist')}"
+				includeInLayout="false" styleName="removeItemStyle" hideEffect="{fadeOutEffect}">
+				<mx:Label text=" x " verticalCenter="0" horizontalCenter="0"/>
+			</custom:GradientCanvas>
+		</mx:Canvas>
+		<mx:Canvas width="10%" height="100%" horizontalScrollPolicy="off">
+			<mx:Label id="duration" truncateToFit="true" width="100%" text="{trackLength}" verticalCenter="0"/>
+		</mx:Canvas>
+		<mx:Spacer width="2%" height="100%"/>
+	</mx:HBox>
+	<mx:Spacer width="100%" height="0.5%"/>
+	
+</mx:VBox>

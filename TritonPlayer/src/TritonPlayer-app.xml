@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://ns.adobe.com/air/application/1.0">
+
+<!-- Adobe AIR Application Descriptor File Template.
+
+	Specifies parameters for identifying, installing, and launching AIR applications.
+	See http://www.adobe.com/go/air_1.0_application_descriptor for complete documentation.
+
+	xmlns - The Adobe AIR namespace: http://ns.adobe.com/air/application/1.0
+			The last segment of the namespace specifies the version 
+			of the AIR runtime required for this application to run.
+			
+	minimumPatchLevel - The minimum patch level of the AIR runtime required to run 
+			the application. Optional.
+-->
+	<id>TritonPlayer</id>
+
+	<filename>TritonPlayer</filename>
+
+	<name>TritonPlayer</name>
+	<version>1.3.6.8</version>
+
+	<description>Triton Player is an Adobe AIR based MP3 player application. 
+	It supports XML based playlists, shuffled mode and multiple languages.
+	</description>
+
+	<copyright>2011 Centrum inc Software Solutions</copyright>
+
+	<initialWindow>
+		<content>[This value will be overwritten by Flex Builder in the output app.xml]</content>
+		
+		<title>Triton</title>
+
+		<!-- The type of system chrome to use (either "standard" or "none"). Optional. Default standard. -->
+		<systemChrome>none</systemChrome>
+
+		<!-- Whether the window is transparent. Only applicable when systemChrome is false. Optional. Default false. -->
+		<transparent>true</transparent>
+		
+		<minimizable>true</minimizable>
+		<maximizable>false</maximizable>
+		<resizable>false</resizable>
+		<width>350</width>
+		<height>480</height>
+	</initialWindow>
+
+	<!-- The subpath of the standard default installation location to use. Optional. -->
+	<!-- <installFolder></installFolder> -->
+
+	<!-- The subpath of the Windows Start/Programs menu to use. Optional. -->
+	<!-- <programMenuFolder></programMenuFolder> -->
+
+	<!-- The icon the system uses for the application. For at least one resolution,
+		 specify the path to a PNG file included in the AIR package. Optional. -->
+	<icon>
+		<image16x16>/resources/images/icons/trident_16.png</image16x16>
+		<image32x32>/resources/images/icons/trident_32.png</image32x32>
+		<image48x48>/resources/images/icons/trident_48.png</image48x48>
+		<image128x128>/resources/images/icons/trident_128.png</image128x128>
+	</icon>
+
+	<!-- Whether the application handles the update when a user double-clicks an update version
+	of the AIR file (true), or the default AIR application installer handles the update (false).
+	Optional. Default false. -->
+	<!-- <customUpdateUI></customUpdateUI> -->
+	
+	<!-- Whether the application can be launched when the user clicks a link in a web browser.
+	Optional. Default false. -->
+	<!-- <allowBrowserInvocation></allowBrowserInvocation> -->
+
+	<!-- Listing of file types for which the application can register. Optional. -->
+	<fileTypes>
+		<fileType>
+			<name>Triton.Playlist</name>
+			<extension>tpl</extension>
+			<description>Triton Playlist file</description>
+			
+			<!-- The MIME type. Optional. -->
+			<contentType>text/xml</contentType>
+			
+			<!-- The icon to display for the file type. Optional. -->
+			<icon>
+				<!--<image16x16></image16x16>-->
+				<image32x32>/resources/images/icons/triton_playlist_file.png</image32x32>
+				<!--<image48x48></image48x48>-->
+				<!--<image128x128></image128x128>-->
+			</icon>
+			
+		</fileType>
+	</fileTypes>
+
+</application>

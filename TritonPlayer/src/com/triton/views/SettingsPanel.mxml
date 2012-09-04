@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%" 
+	xmlns:custom="com.triton.custom.*"
+	creationComplete="init()">
+
+	<mx:Script>
+		<![CDATA[
+			import com.triton.utils.Utils;
+			import com.triton.managers.ThemeManager;
+			import com.triton.events.TritonPlayerEvent;
+			import mx.events.ItemClickEvent;
+			import mx.core.Application;
+			import mx.managers.PopUpManager;
+			import com.triton.assets.LayoutAssets;
+			import com.triton.custom.CustomEventDispatcher;
+			import com.triton.model.ModelLocator;	
+			
+			//-----------------------------------------------------------------
+			//
+			// Variables
+			//
+			//-----------------------------------------------------------------
+			[Bindable]
+			private var assets:LayoutAssets;
+			[Bindable]
+			private var model:ModelLocator;
+			[Bindable]
+			private var isTransparent:Boolean;
+			[Bindable]
+			private var loopOnEnd:Boolean;
+			[Bindable]
+			private var minimizeToTray:Boolean;
+			[Bindable]
+			private var currentThemeIndex:int;
+			[Bindable]
+			private var currentLocaleIndex:int;
+			private var eventDispatcher:CustomEventDispatcher;			
+			
+			/**
+			 * Method to initialize variables
+			 */
+			private function init():void
+			{
+				// Get Singleton instances
+				assets 			= LayoutAssets.getInstance();
+				model 			= ModelLocator.getInstance();
+				eventDispatcher = CustomEventDispatcher.getInstance();
+				
+				// Copy data from model to bindable variables
+				isTransparent 	= model.isWindowTransparent;
+				loopOnEnd 		= model.loopOnEnd;
+				minimizeToTray 	= model.minimizeToTray;
+				
+				// Set the currently selected data
+				currentThemeIndex = Utils.getItemIndexInArray(availableThemes, 
+					model.currentTheme);
+				currentLocaleIndex = Utils.getItemIndexInArray(
+					availableLanguages, model.currentLocale);				
+				
+				// Set the transparency
+				setWindowTransparency();
+				
+				// Listen to event for hiding the settings panel
+				eventDispatcher.addEventListener(
+					TritonPlayerEvent.HIDE_MODAL_WINDOW, onHideModalWindow);
+				// Apply fade effect for the outercanvas
+				fadeInEffect.play([outerCanvas]);
+			}
+			
+			/**
+			 * Invoked when an escape key is pressed while a modal window is visible.
+			 */
+			private function onHideModalWindow(event:TritonPlayerEvent):void
+			{
+				eventDispatcher.removeEventListener(TritonPlayerEvent.HIDE_MODAL_WINDOW,
+					onHideModalWindow);
+				onCloseButtonClick();
+			}
+			
+			/**
+			 * Invoked when close button is clicked
+			 */
+			private function onCloseButtonClick():void
+			{
+				model.isModalWindowVisible = false;
+				PopUpManager.removePopUp(this);
+				(Application.application as TritonPlayer).setFocus();
+			}
+			
+			/**
+			 * Invoked when the check box has changed
+			 */
+			private function onTranspCheckboxChange():void
+			{
+				isTransparent = checkBoxTransparency.selected;
+			}
+			
+			private function onLoopCheckboxChange():void
+			{
+				loopOnEnd = checkBoxLoopOnEnd.selected;
+			}
+			
+			private function onMinimizeToTrayCheckboxChange():void
+			{
+				minimizeToTray = checkBoxHideToTray.selected;
+			}
+			
+			/**
+			 * Invoked when the save button is been clicked
+			 */
+			private function onSaveButtonClick():void
+			{
+				if(checkBoxLoopOnEnd)
+					model.loopOnEnd = checkBoxLoopOnEnd.selected;
+				if(checkBoxTransparency)
+					model.isWindowTransparent = checkBoxTransparency.selected;
+				if(checkBoxHideToTray)
+					model.minimizeToTray = checkBoxHideToTray.selected;
+				
+				(Application.application as TritonPlayer).setWindowTransparency();
+				setWindowTransparency();
+			}
+			
+			/**
+			 * Invoked when the change locale button is clicked
+			 */
+			private function onChangeButtonClick():void
+			{
+				if(selectLanguages.selectedIndex != -1)
+				{
+					var selectedIndex:int;
+					var selectedLocale:String = selectLanguages.selectedItem.data;
+					// Update only if different from current locale
+					if(model.currentLocale != selectedLocale)
+					{
+						resourceManager.localeChain = [selectedLocale];
+						resourceManager.update();
+						model.currentLocale = selectedLocale;
+						
+						// forcibly update the link bar
+						linkBar.dataProvider = null;
+						linkBar.dataProvider = buttonColl;
+						
+						// Update the Locale combobox
+						selectedIndex = selectLanguages.selectedIndex;
+						selectLanguages.dataProvider = null;
+						selectLanguages.dataProvider = availableLanguages;
+						selectLanguages.selectedIndex = selectedIndex;
+						
+						// Update the Themes combobox
+						selectedIndex = selectThemes.selectedIndex;
+						selectThemes.dataProvider = null;
+						selectThemes.dataProvider = availableThemes;
+						selectThemes.selectedIndex = selectedIndex;
+					}
+				}
+				var selectedTheme:String = selectThemes.selectedItem.data;
+				if(model.currentTheme != selectedTheme)
+				{
+					ThemeManager.loadApplicationTheme(selectedTheme);
+					model.currentTheme = ThemeManager.getCurrentTheme();
+				}
+			}
+			
+			/**
+			 * This method will set transparancy values for the window
+			 */
+			private function setWindowTransparency():void
+			{
+				if(model.isWindowTransparent)
+				{
+					outerCanvas.alpha 		= 0.5;
+					fadeInEffect.alphaTo 	= 0.5
+					generalSettingsContainer.alpha = 2;
+					otherSettingsContainer.alpha = 2;
+					outerCanvas.styleName = "outerCanvasGradient";
+				}
+				else
+				{
+					outerCanvas.alpha 		= 1;
+					fadeInEffect.alphaTo 	= 1;
+					generalSettingsContainer.alpha = 1;
+					otherSettingsContainer.alpha = 1;
+					outerCanvas.styleName = "outerCanvasGradientAlt";
+				}
+			}
+			
+			/**
+			 * Method to change the view statck to display the screens
+			 */
+			private function clickHandler(event:ItemClickEvent):void
+			{
+				settingsViewStack.selectedIndex = event.index;
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Array id="buttonColl">
+		<mx:Object data="generalSettingsContainer" 
+			label="{resourceManager.getString('resources','lbl_general')}"/>
+		<mx:Object data="moreSettingsContainer"
+			label="{resourceManager.getString('resources','lbl_more')}"/>
+		<mx:Object data="otherSettingsContainer" 
+			label="{resourceManager.getString('resources','lbl_other')}"/>
+		<mx:Object data="aboutPanelContainer" 
+			label="{resourceManager.getString('resources','lbl_about')}"/>
+	</mx:Array>	
+	
+	<!--The language values are hardcoded-->
+	<mx:Array id="availableLanguages">
+		<mx:Object data="en_US"
+			label="{resourceManager.getString('resources','lbl_languageEnglish')}"/>
+		<mx:Object data="de_DE"
+			label="{resourceManager.getString('resources','lbl_languageGerman')}"/>
+	</mx:Array>
+	
+	<mx:Array id="availableThemes">
+		<mx:Object data="orange"
+			label="{resourceManager.getString('resources','lbl_orange')}"/>
+		<mx:Object data="green"
+			label="{resourceManager.getString('resources','lbl_green')}"/>
+	</mx:Array>
+	
+	<mx:WipeDown id="wideDownEffect" duration="200"/>
+	<mx:Fade id="fadeInEffect" alphaFrom="0" alphaTo="0.5" duration="300"/>
+	
+	<custom:GradientCanvas id="outerCanvas" styleName="outerCanvasGradient" alpha="0.5" 
+		width="100%" height="100%">
+		
+		<mx:VBox width="95%" height="100%" verticalGap="0" horizontalGap="0"
+			verticalScrollPolicy="off" horizontalScrollPolicy="off" horizontalAlign="center" 
+			verticalCenter="0" horizontalCenter="0" verticalAlign="middle">
+			
+			<!--top panel-->			
+			<mx:HBox width="100%" height="3%" verticalGap="0" horizontalGap="0" 
+				verticalScrollPolicy="off" horizontalScrollPolicy="off" horizontalAlign="right">
+				<mx:Image id="closeButton" source="{assets.closePlayerButton}" 
+					toolTip="{resourceManager.getString('resources','lbl_close')}"
+					click="onCloseButtonClick()" buttonMode="true" useHandCursor="true" alpha="3"/>
+			</mx:HBox>
+			
+			<custom:GradientCanvas id="itemsTab" styleName="innerCanvasGradient"
+				width="100%" height="10%" alpha="2" verticalCenter="0" horizontalCenter="0">
+				<mx:LinkBar id="linkBar"
+					verticalAlign="middle"
+					itemClick="clickHandler(event)"
+					dataProvider="{buttonColl}"
+					styleName="linkButtonStyle"/>
+			</custom:GradientCanvas>
+			
+			<mx:Spacer width="100%" height="2%"/>
+			
+			<mx:ViewStack id="settingsViewStack" width="100%" height="83%" selectedIndex="0">
+				
+				<!--general settings-->
+				<custom:GradientCanvas id="generalSettingsContainer" styleName="innerCanvasGradient"
+					width="100%" height="100%" alpha="2"
+					verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					<mx:HBox width="100%" height="100%" verticalGap="0" horizontalGap="0">
+						<mx:Spacer width="2%" height="100%"/>
+						<mx:VBox width="96%" height="100%" verticalGap="5" horizontalGap="5">
+							<mx:Label styleName="settingsTitleText"
+								text="{resourceManager.getString('resources','lbl_generalSettings')}"/>
+							<mx:CheckBox id="checkBoxTransparency" styleName="checkBoxStyle"
+								label="{resourceManager.getString('resources','lbl_useTransparancy')}" 
+								selected="{isTransparent}" change="onTranspCheckboxChange()"/>
+							<mx:TextArea backgroundAlpha="0" editable="false" selectable="false"
+								borderStyle="none" styleName="settingsContentText" width="100%"
+								text="{resourceManager.getString('resources','lbl_settingsTransparancy')}"/>
+							
+							<mx:Canvas width="100%" height="1" styleName="separatorStyle"/>
+								
+							<mx:CheckBox id="checkBoxLoopOnEnd" styleName="checkBoxStyle"
+								label="{resourceManager.getString('resources','lbl_loopOnEnd')}"
+								selected="{loopOnEnd}" change="onLoopCheckboxChange()"/>
+							<mx:TextArea backgroundAlpha="0" editable="false" selectable="false"
+								borderStyle="none" styleName="settingsContentText" width="100%" height="50"
+								text="{resourceManager.getString('resources','lbl_settingsLoopOnEnd')}"/>
+								
+							<mx:Button click="onSaveButtonClick()" styleName="buttonStyle"
+								label="{resourceManager.getString('resources','lbl_buttonSave')}"
+								buttonMode="true" useHandCursor="true"/>
+						</mx:VBox>
+						<mx:Spacer width="2%" height="100%"/>
+					</mx:HBox>
+				</custom:GradientCanvas>
+				
+				<!--More general settings-->
+				<custom:GradientCanvas id="moreSettingsContainer" styleName="innerCanvasGradient"
+					width="100%" height="100%" alpha="2"
+					verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					<mx:HBox width="100%" height="100%" verticalGap="0" horizontalGap="0">
+						<mx:Spacer width="2%" height="100%"/>
+						<mx:VBox width="96%" height="100%" verticalGap="3" horizontalGap="3">
+							<mx:Label styleName="settingsTitleText"
+								text="{resourceManager.getString('resources','lbl_generalSettings')}"/>
+							
+							<mx:CheckBox id="checkBoxHideToTray" styleName="checkBoxStyle"
+								label="{resourceManager.getString('resources','lbl_hideToTray')}"
+								selected="{minimizeToTray}" change="{onMinimizeToTrayCheckboxChange()}"/>
+							<mx:TextArea backgroundAlpha="0" editable="false" selectable="false"
+								borderStyle="none" styleName="settingsContentText" width="100%" height="55"
+								text="{resourceManager.getString('resources','lbl_settingsHideToTray')}"/>
+							
+							<!--
+							<mx:Canvas width="100%" height="1" styleName="separatorStyle"/>
+							-->
+							
+							<mx:Spacer width="100%" height="82"/>
+								
+							<mx:Button click="{onSaveButtonClick()}" styleName="buttonStyle"
+								label="{resourceManager.getString('resources','lbl_buttonSave')}"
+								buttonMode="true" useHandCursor="true"/>
+						</mx:VBox>
+						<mx:Spacer width="2%" height="100%"/>
+					</mx:HBox>
+				</custom:GradientCanvas>
+				
+				<!--other settings-->
+				<custom:GradientCanvas id="otherSettingsContainer" styleName="innerCanvasGradient"
+					width="100%" height="100%" alpha="2"
+					verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					<mx:HBox width="100%" height="100%" verticalGap="0" horizontalGap="0">
+						<mx:Spacer width="2%" height="100%"/>
+						<mx:VBox width="96%" height="100%" verticalGap="4" horizontalGap="5">
+							<mx:Label styleName="settingsTitleText"
+								text="{resourceManager.getString('resources','lbl_otherSettings')}"/>
+							
+							<!--start themes-->
+							<mx:HBox width="100%">
+								<mx:Canvas width="55%" height="100%">
+									<mx:Label styleName="settingsContentText" 
+										text="{resourceManager.getString('resources','lbl_selectTheme')}"/>
+								</mx:Canvas>
+								<mx:ComboBox id="selectThemes" styleName="comboBoxStyle"
+									selectedIndex="{currentThemeIndex}"
+									dataProvider="{availableThemes}"/>
+							</mx:HBox>
+							
+							<mx:TextArea backgroundAlpha="0" editable="false" selectable="false"
+								borderStyle="none" styleName="settingsContentText" width="100%" height="36"
+								text="{resourceManager.getString('resources','lbl_settingsThemeText')}"/>
+							<!--end themes-->
+							
+							<mx:Canvas width="100%" height="1" styleName="separatorStyle"/>
+							
+							<!--start locale-->
+							<mx:HBox width="100%">
+								<mx:Canvas width="55%" height="100%">
+									<mx:Label styleName="settingsContentText" 
+										text="{resourceManager.getString('resources','lbl_selectLanguage')}"/>
+								</mx:Canvas>
+								<mx:ComboBox id="selectLanguages" styleName="comboBoxStyle"
+									selectedIndex="{currentLocaleIndex}"
+									dataProvider="{availableLanguages}"/>
+							</mx:HBox>
+							
+							<mx:TextArea backgroundAlpha="0" editable="false" selectable="false"
+								borderStyle="none" styleName="settingsContentText" width="100%" height="60"
+								text="{resourceManager.getString('resources','lbl_settingsLanguageText')}"/>
+							<!--end locale-->
+							
+							<mx:Spacer width="100%" height="4"/>
+								
+							<mx:Button click="onChangeButtonClick()" styleName="buttonStyle" 
+								label="{resourceManager.getString('resources','lbl_buttonChange')}"
+								buttonMode="true" useHandCursor="true"/>
+						</mx:VBox>
+						<mx:Spacer width="2%" height="100%"/>
+					</mx:HBox>
+				</custom:GradientCanvas>
+				
+				<!--about triton player-->
+				<custom:GradientCanvas id="aboutPanelContainer" styleName="innerCanvasGradient"
+					width="100%" height="100%" alpha="2" creationPolicy="all"
+					verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					<mx:HBox width="100%" height="100%" verticalGap="0" horizontalGap="0">
+						<mx:Spacer width="2%" height="100%"/>
+						<mx:VBox width="96%" height="100%" verticalGap="5" horizontalGap="5">
+							<mx:Label styleName="settingsTitleText"
+								text="{resourceManager.getString('resources','lbl_aboutTriton')}"/>
+							<mx:Canvas width="100%">
+								<mx:Image id="tritonLogo" verticalAlign="middle" horizontalAlign="center"
+									source="{assets.tritonLogoText}"
+									verticalCenter="0" horizontalCenter="0">
+									<mx:filters>
+										<mx:DropShadowFilter/>
+									</mx:filters>
+								</mx:Image>
+							</mx:Canvas>
+							<mx:Label verticalCenter="0" 
+								text="{resourceManager.getString('resources','lbl_settingsAppVersionText',
+								[model.APPLICATION_TITLE, model.BUILD_NUMBER])}" 
+								styleName="settingsContentText"/>
+							<mx:TextArea backgroundAlpha="0" editable="false" selectable="false"
+								borderStyle="none" styleName="settingsContentText" width="100%"
+								text="{resourceManager.getString('resources','lbl_aboutTritonPlayerText')}"
+								height="50%"/>
+						</mx:VBox>
+						<mx:Spacer width="2%" height="100%"/>
+					</mx:HBox>
+				</custom:GradientCanvas>
+			</mx:ViewStack>
+			
+			<mx:Spacer width="100%" height="2%"/>
+		</mx:VBox>
+			
+	</custom:GradientCanvas>
+	
+</mx:Canvas>
