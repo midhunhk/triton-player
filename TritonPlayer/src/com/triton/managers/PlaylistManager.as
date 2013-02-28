@@ -169,7 +169,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * Function to listnen to Timer event thrown by the AudioPlayer
+	 * Function to listen to Timer events thrown by the AudioPlayer
 	 */
 	private function onTimerComplete(event:TimerTickEvent):void
 	{
@@ -183,7 +183,7 @@ public class PlaylistManager
 	//-------------------------------------------------------------------------
 	
 	/**
-	 * This method plays the current track
+	 * Play a track based on the current track index
 	 */
 	public function playCurrentTrack():void
 	{
@@ -191,7 +191,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method plays a track with an index specified
+	 * Play a track with a specified index
 	 */
 	public function playTrackWithIndex(index:int):void
 	{
@@ -210,7 +210,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is called to play the playlist in shuffled mode
+	 * Toggle between a shuffled and normal playlist.
 	 */
 	public function playInShuffledMode():void
 	{
@@ -252,7 +252,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is used to play a track with its Vo
+	 * This method is used to play a track when the track's ValueObject is known
 	 */
 	public function playTrackFromVo(trackVo:TrackVO):void
 	{
@@ -271,7 +271,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is used to play the current track from a position
+	 * Play the current track from a position
 	 */
 	public function playTrackFromPosition(percPosition:Number, 
 		continuePlaying:Boolean):void
@@ -287,7 +287,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is used to stop playing the current track
+	 * Stop the player
 	 */
 	public function stopPlay():void
 	{
@@ -299,7 +299,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is used to pause the play
+	 * Pause the current track
 	 */
 	public function pausePlay():void
 	{
@@ -310,7 +310,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is used to play the next track
+	 * Plays the next track in the playlist
 	 */
 	public function playNextTrack():void
 	{
@@ -326,7 +326,7 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method is used to play the previous  track
+	 * Plays the previous track in the playlist
 	 */
 	public function playPreviousTrack():void
 	{
@@ -391,13 +391,16 @@ public class PlaylistManager
 	}
 	
 	/**
-	 * This method will return the current value of the volume
+	 * Returns the current value for volume
 	 */
 	public function getCurrentVolume():Number
 	{
 		return audioPlayer.getCurrentVolume();
 	}
 	
+	/*
+	 * Returns the current track length
+	 */
 	public function getTrackLength():int
 	{
 		return audioPlayer.trackLength;
@@ -410,7 +413,7 @@ public class PlaylistManager
 	//-------------------------------------------------------------------------
 	
 	/**
-	 * This method will append a trackVo to the playlist collection
+	 * Append a trackVo to the playlist
 	 */
 	public function addItemToPlaylist(trackVo:TrackVO):void
 	{
