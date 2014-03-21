@@ -14,8 +14,10 @@ import com.triton.utils.Utils;
 import mx.collections.ArrayCollection;
 
 /**
- * The Playlist Manager instance manages the playlist and other variables
- * associated with the files.
+ * An instance of PlaylistManager manages the playlist and other state data
+ *
+ * This class manages the state of the playlist as well as being a Facade to
+ * the AudioPlayer object that does the real work of playing an audio file
  */
 public class PlaylistManager
 {
