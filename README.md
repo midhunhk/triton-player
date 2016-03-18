@@ -8,7 +8,7 @@ This project was done by a single developer in his free time from Dec 2010 to Au
 
 Features
 ========
-* Brilliant UI (transparent)
+* Brilliant UI (with transparency)
 * Different Visualization options
 * Compact and Full Modes
 * Create and load playlists
@@ -21,7 +21,8 @@ Features
 How to get it
 =============
 Find detailed v1.3 changelog and download the latest version from here : http://midhunhk.blogspot.com/2011/07/triton-player-13-themes-are-here.html
-Complete changelog can be foundt at https://github.com/midhunhk/triton-player/blob/master/TritonPlayer/src/VersionHistory.txt
+
+Complete changelog can be found at https://github.com/midhunhk/triton-player/wiki/Changelog
 
 Screenshots
 ===========
