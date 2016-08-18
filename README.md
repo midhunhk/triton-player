@@ -8,21 +8,22 @@ This project was done by a single developer in his free time from Dec 2010 to Au
 
 Features
 ========
-* Brilliant UI (with transparency)
-* Different Visualization options
+* Amazing UI
+* Visualization support
 * Compact and Full Modes
 * Create and load playlists
-* Multilingual (Implementation for English and German)
+* Internationalization Support (Implementation for English and German)
 * Minimize to System Tray
 * Shuffle playlist
-* Support for Themes
+* Multiple Themes Support
 * Seekbar (Sounds simple, but was very difficult to implement)
 
 How to get it
 =============
-Find detailed v1.3 changelog and download the latest version from here : http://midhunhk.blogspot.com/2011/07/triton-player-13-themes-are-here.html
+The latest version of triton player is available at:
+https://github.com/midhunhk/triton-player/blob/master/Builds/TritonPlayer_1.3.74.air
 
-Complete changelog can be found at https://github.com/midhunhk/triton-player/wiki/Changelog
+The complete changelog can be found at https://github.com/midhunhk/triton-player/wiki/Changelog
 
 Screenshots
 ===========
