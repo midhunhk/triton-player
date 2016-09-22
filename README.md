@@ -18,6 +18,14 @@ Features
 * Multiple Themes Support
 * Seekbar (Sounds simple, but was very difficult to implement)
 
+Libraries Used
+==============
+Triton Player is build on top of an in house audio engine "sndbar". The core of the audio engine is called AudioPlayer which rovides support for media operations on a single audio file. Triton Player builds on top of this giving a rich UI and playlist support.
+
+sndbar source: https://github.com/midhunhk/lib-sndbar
+
+sndbar wiki: https://github.com/midhunhk/lib-sndbar/wiki
+
 How to get it
 =============
 The latest version of triton player is available at:
