@@ -1,9 +1,9 @@
 <img align="right" height="100" src="https://raw.githubusercontent.com/midhunhk/triton-player/master/Resources/trident-icon.png" />
 
 # Triton Player
-[![](https://img.shields.io/badge/version-v1.3.74-FF9800.svg)]()  
-[Changelog](https://github.com/midhunhk/triton-player/wiki/Changelog) 
-[Builds](https://github.com/midhunhk/triton-player/tree/master/Builds)  
+[![](https://img.shields.io/badge/version-v1.3.74-FF9800.svg)]() 
+[Changelog](https://github.com/midhunhk/triton-player/wiki/Changelog) | 
+[Builds](https://github.com/midhunhk/triton-player/tree/master/Builds) | 
 [Release Notes](https://github.com/midhunhk/triton-player/wiki/ReleaseNotes) 
 
 Triton Player is an MP3 player based on Adobe AIR platform. What started as an educational endeavour while working on Adobe Flex and the AIR platform, was released to the general public.
