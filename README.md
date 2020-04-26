@@ -1,3 +1,5 @@
+_This project is considered as feature complete and no longer in active development or supports provided_
+
 <img align="right" height="100" src="https://raw.githubusercontent.com/midhunhk/triton-player/master/Resources/trident-icon.png" />
 
 # Triton Player
