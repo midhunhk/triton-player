@@ -1,0 +1,27 @@
+Creating a self-signed certificate with ADT
+https://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7f74.html
+
+Certificate generation examples
+adt -certificate -cn SelfSign -ou QE -o "Example, Co" -c US 2048-RSA newcert.p12 39#wnetx3tl 
+adt -certificate -cn ADigitalID 1024-RSA SigningCert.p12 39#wnetx3tl
+To use these certificates to sign AIR files, you use the following signing options with the ADT -package or -prepare commands:
+
+-storetype pkcs12 -keystore newcert.p12 -storepass 39#wnetx3tl 
+-storetype pkcs12 -keystore SigningCert.p12 -storepass 39#wnetx3tl
+
+
+Use 32 bit JDK
+
+C:\Softwares\Java\java-1.8.0-openjdk-1.8.0.242-3.b08.redhat.windows.x86_64
+
+
+Run the copylocale command
+
+C:\Softwares\Flex Builder 3\sdks\3.2.0\bin
+copylocale en_US de_DE
+
+https://community.adobe.com/t5/air/packaging-error-could-not-generate-timestamp/td-p/8611383?page=1
+
+
+"C:\Softwares\Flex Builder 3\sdks\3.2.0\bin\adt.bat" -sign -storetype pkcs12 -keystore ..\air_self_signed_2021.p12 -tsa "http://sha256timestamp.ws.symantec.com/sha256/timestamp" "TritonPlayer.airi" "TritonPlayer.air"
+
