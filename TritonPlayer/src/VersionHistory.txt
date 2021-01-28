@@ -92,3 +92,6 @@ Triton Player 1.2 [May 2011]
  				the user presses shortcut for Compact Mode.
  - [FIXED]		Bug fix for playlist scrolling to first item when a playlist
  				item is deleted.
+ 				
+ Triton Player 1.3.7.5 [January 2021]
+ - [PUBLISH]	Republish with new (self signed) certificate.
