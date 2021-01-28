@@ -1,4 +1,4 @@
-_This project is considered as feature complete and no longer in active development or supports provided_
+_This project is considered as feature complete and no longer in active development or supported._
 
 <img align="right" height="100" src="https://raw.githubusercontent.com/midhunhk/triton-player/master/Resources/trident-icon.png" />
 
@@ -33,7 +33,7 @@ This project was designed by a single developer in his free time from Dec 2010 t
 
 ## Installation
 1. Install [Adobe AIR](https://get.adobe.com/air/otherversions/) 
-2. Download and install the [latest build](https://github.com/midhunhk/triton-player/blob/master/Builds/TritonPlayer_1.3.74.air)
+2. Download and install the [latest build](https://github.com/midhunhk/triton-player/blob/master/Builds/TritonPlayer_1.3.7.5.air)
 
 ## Dependencies
 Triton Player is built on top of an in house audio engine "sndbar". The core of the audio engine is called AudioPlayer which rovides support for media operations on a single audio file. 
